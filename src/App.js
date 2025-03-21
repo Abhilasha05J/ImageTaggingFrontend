@@ -62,7 +62,7 @@ const [notification, setNotification] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
 
   // Categories
-  const categories = ['Normal', 'Initial Stage', 'Option3', 'Skip'];
+  const categories = ['Normal', 'Early Stage', 'Cataract', 'Skip'];
   
   // API URL configuration
   const API_BASE_URL = process.env.REACT_APP_API_URL || 
@@ -319,6 +319,15 @@ const [notification, setNotification] = useState('');
   };
   
   const handleSaveAll = async () => {
+    const currentImageFilename = getCurrentImageFilename();
+  
+    // Check if the current image has a category selected
+    if (!categorizedImages[currentImageFilename]) {
+      setError('Please select a category for this image before saving');
+      setShowSnackbar(true);
+      return;
+    }
+
     if (Object.keys(categorizedImages).length === 0) {
       setError('No images have been categorized yet');
       setShowSnackbar(true);
@@ -530,7 +539,7 @@ const [notification, setNotification] = useState('');
     <Container maxWidth="md" sx={{ my: 4 }}>
       <Paper elevation={3} sx={{ p: 3, backgroundColor: '#f8f9fa' }}>
         <Typography variant="h4" component="h1" gutterBottom align="center">
-          Name
+          Image Classifier
         </Typography>
         
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
@@ -713,7 +722,7 @@ const [notification, setNotification] = useState('');
                 color="success"
                 startIcon={<SaveIcon />}
                 onClick={handleSaveAll}
-                disabled={!isAllCategorized}
+                 disabled={!categorizedImages[getCurrentImageFilename()]}
               >
                 Save
               </Button>
