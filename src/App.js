@@ -64,7 +64,7 @@ const [notification, setNotification] = useState('');
   // Categories
   const categories = ['Normal', 'Early Stage', 'Cataract', 'Skip'];
   
-  
+
   // API URL configuration
   const API_BASE_URL = process.env.REACT_APP_API_URL || 
     (window.location.hostname.includes("localhost")
@@ -359,6 +359,7 @@ const [notification, setNotification] = useState('');
       }
       
       const result = await response.json();
+      
       setSuccessMessage(`Successfully saved ${result.categorizedCount} images to ${result.destinationFolder}`);
       setShowSnackbar(true);
       
@@ -1028,7 +1029,7 @@ const [notification, setNotification] = useState('');
      </Dialog>
      
      {/* Snackbar for notifications */}
-     <Snackbar
+     {/* <Snackbar
        open={!!notification}
        autoHideDuration={6000}
        onClose={() => setNotification(null)}
@@ -1041,7 +1042,31 @@ const [notification, setNotification] = useState('');
        >
          {notification?.message}
        </Alert>
-     </Snackbar>
+     </Snackbar> */}
+     {/* Snackbar updated */}
+     <Snackbar
+  open={showSnackbar}
+  autoHideDuration={6000}
+  onClose={() => {
+    setShowSnackbar(false);
+    setError('');
+    setSuccessMessage('');
+  }}
+  anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+>
+  <Alert 
+    onClose={() => {
+      setShowSnackbar(false);
+      setError('');
+      setSuccessMessage('');
+    }} 
+    severity={error ? 'error' : 'success'}
+    sx={{ width: '100%' }}
+  >
+    {error || successMessage}
+  </Alert>
+</Snackbar>
+
    </Container>
  );
 };
