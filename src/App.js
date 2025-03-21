@@ -64,6 +64,7 @@ const [notification, setNotification] = useState('');
   // Categories
   const categories = ['Normal', 'Early Stage', 'Cataract', 'Skip'];
   
+  
   // API URL configuration
   const API_BASE_URL = process.env.REACT_APP_API_URL || 
     (window.location.hostname.includes("localhost")
