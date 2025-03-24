@@ -69,7 +69,7 @@ const [notification, setNotification] = useState('');
   const API_BASE_URL = process.env.REACT_APP_API_URL || 
     (window.location.hostname.includes("localhost")
       ? "http://localhost:8080"
-      : "https://imagetaggingbackend.onrender.com/");
+      : "https://imagetaggingbackend.onrender.com");
 
   const DEFAULT_UNCATEGORIZED_PATH = 'Uncategorized_Images/';
 
