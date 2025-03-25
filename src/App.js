@@ -92,13 +92,10 @@ const [notification, setNotification] = useState('');
     if (currentDir) {
       const pathParts = currentDir.split('/').filter(part => part);
       
-      const breadcrumbItems = [
-        { name: 'Root', path: '' },
-        ...pathParts.map((part, index) => {
-          const path = pathParts.slice(0, index + 1).join('/') + '/';
-          return { name: part, path: path };
-        })
-      ];
+      const breadcrumbItems = pathParts.map((part, index) => {
+        const path = pathParts.slice(0, index + 1).join('/') + '/';
+        return { name: part, path: path };
+      });      
       
       setBreadcrumbs(breadcrumbItems);
     } else {
