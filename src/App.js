@@ -99,7 +99,7 @@ const [notification, setNotification] = useState('');
       
       setBreadcrumbs(breadcrumbItems);
     } else {
-      setBreadcrumbs([{ name: 'Root', path: '' }]);
+      setBreadcrumbs([{ name: 'Home', path: '' }]);
     }
   }, [currentDir]);
 
@@ -117,7 +117,7 @@ const [notification, setNotification] = useState('');
       setSubdirectories([]);
       setCurrentDir('');
       setDirHistory([]);
-      setBreadcrumbs([{ name: 'Root', path: '' }]);
+      setBreadcrumbs([{ name: 'Home', path: '' }]);
     } catch (err) {
       setError('Error loading directories: ' + err.message);
       setShowSnackbar(true);
