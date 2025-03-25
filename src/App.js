@@ -15,6 +15,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { CardMedia } from '@mui/material';
 import { 
   TextField, FormControl, InputLabel, Select, MenuItem, 
   Switch, Checkbox, Divider 
@@ -45,6 +46,7 @@ const [exportFormat, setExportFormat] = useState('');
 const [includeTimestamp, setIncludeTimestamp] = useState(false);
 const [includeFullPath, setIncludeFullPath] = useState(false);
 const [notification, setNotification] = useState('');
+const [imagePreviewsInDir, setImagePreviewsInDir] = useState([]);
 
   // Directory browser state
   const [dirDialogOpen, setDirDialogOpen] = useState(false);
@@ -126,6 +128,33 @@ const [notification, setNotification] = useState('');
     }
   };
 
+  // const fetchSubdirectories = async (dirPath) => {
+  //   setDirLoading(true);
+  //   try {
+  //     const response = await fetch(`${API_BASE_URL}/api/list-subdirectories`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ directory: dirPath }),
+  //     });
+      
+  //     if (!response.ok) {
+  //       throw new Error('Failed to fetch subdirectories');
+  //     }
+      
+  //     const data = await response.json();
+  //     setSubdirectories(data.subdirectories);
+  //     setCurrentDir(dirPath);
+  //     setDirHistory(prev => [...prev, dirPath]);
+  //   } catch (err) {
+  //     setError('Error loading subdirectories: ' + err.message);
+  //     setShowSnackbar(true);
+  //   } finally {
+  //     setDirLoading(false);
+  //   }
+  // };
+
   const fetchSubdirectories = async (dirPath) => {
     setDirLoading(true);
     try {
@@ -136,15 +165,34 @@ const [notification, setNotification] = useState('');
         },
         body: JSON.stringify({ directory: dirPath }),
       });
-      
+  
       if (!response.ok) {
         throw new Error('Failed to fetch subdirectories');
       }
-      
+  
       const data = await response.json();
       setSubdirectories(data.subdirectories);
       setCurrentDir(dirPath);
       setDirHistory(prev => [...prev, dirPath]);
+  
+      // 🆕 If no subfolders, try loading image previews
+      if (data.subdirectories.length === 0) {
+        const imageResponse = await fetch(`${API_BASE_URL}/api/list-images`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folderPath: dirPath }),
+        });
+  
+        if (imageResponse.ok) {
+          const imageData = await imageResponse.json();
+          setImagePreviewsInDir(imageData.images || []);
+        } else {
+          setImagePreviewsInDir([]);
+        }
+      } else {
+        setImagePreviewsInDir([]); // clear previews if we have subfolders
+      }
+  
     } catch (err) {
       setError('Error loading subdirectories: ' + err.message);
       setShowSnackbar(true);
@@ -152,7 +200,7 @@ const [notification, setNotification] = useState('');
       setDirLoading(false);
     }
   };
-
+  
   const handleNavigateBack = () => {
     if (dirHistory.length > 1) {
       // Remove current directory from history
@@ -452,39 +500,82 @@ const [notification, setNotification] = useState('');
   };
   
   // Render directory cards in a grid layout
-  const renderDirectoryGrid = (directories) => {
+  // const renderDirectoryGrid = (directories) => {
+  //   return (
+  //     <Grid container spacing={2} sx={{ mt: 1 }}>
+  //       {directories.map((dir) => (
+  //         <Grid item xs={6} sm={4} md={3} key={dir.path}>
+  //           <Card sx={{ height: '100%' }}>
+  //             <CardActionArea 
+  //               onClick={() => handleSelectDirectory(dir.path)}
+  //               sx={{ 
+  //                 display: 'flex', 
+  //                 flexDirection: 'column', 
+  //                 alignItems: 'center',
+  //                 p: 2,
+  //                 height: '100%'
+  //               }}
+  //             >
+  //               <FolderIcon sx={{ fontSize: 60, color: 'primary.main', mb: 1 }} />
+  //               <Typography 
+  //                 variant="body2" 
+  //                 align="center" 
+  //                 noWrap 
+  //                 title={dir.name}
+  //                 sx={{ width: '100%' }}
+  //               >
+  //                 {dir.name}
+  //               </Typography>
+  //             </CardActionArea>
+  //           </Card>
+  //         </Grid>
+  //       ))}
+  //     </Grid>
+  //   );
+  // };
+  const renderDirectoryOrImageGrid = (directories, imagePreviews = []) => {
+    const items = [
+      ...directories.map(dir => ({ ...dir, type: 'directory' })),
+      ...imagePreviews.map(img => ({ ...img, type: 'image' }))
+    ];
+  
     return (
       <Grid container spacing={2} sx={{ mt: 1 }}>
-        {directories.map((dir) => (
-          <Grid item xs={6} sm={4} md={3} key={dir.path}>
+        {items.map((item, index) => (
+          <Grid item xs={6} sm={4} md={3} key={item.path || item.key || index}>
             <Card sx={{ height: '100%' }}>
-              <CardActionArea 
-                onClick={() => handleSelectDirectory(dir.path)}
-                sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center',
-                  p: 2,
-                  height: '100%'
-                }}
-              >
-                <FolderIcon sx={{ fontSize: 60, color: 'primary.main', mb: 1 }} />
-                <Typography 
-                  variant="body2" 
-                  align="center" 
-                  noWrap 
-                  title={dir.name}
-                  sx={{ width: '100%' }}
+              {item.type === 'directory' ? (
+                <CardActionArea 
+                  onClick={() => handleSelectDirectory(item.path)}
+                  sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center',
+                    p: 2,
+                    height: '100%'
+                  }}
                 >
-                  {dir.name}
-                </Typography>
-              </CardActionArea>
+                  <FolderIcon sx={{ fontSize: 60, color: 'primary.main', mb: 1 }} />
+                  <Typography variant="body2" align="center" noWrap title={item.name}>
+                    {item.name}
+                  </Typography>
+                </CardActionArea>
+              ) : (
+                <CardMedia
+                  component="img"
+                  height="140"
+                  image={`${API_BASE_URL}/api/image/${encodeURIComponent(item.key)}`}
+                  alt={item.filename || 'Image preview'}
+                  sx={{ objectFit: 'cover' }}
+                />
+              )}
             </Card>
           </Grid>
         ))}
       </Grid>
     );
   };
+  
 
   // Fix: Updated to handle both simple filenames and image objects
   const getCurrentImageFilename = () => {
@@ -805,11 +896,11 @@ const [notification, setNotification] = useState('');
                   <Typography variant="subtitle1" gutterBottom sx={{ pl: 1 }}>
                      Folder Contents
                   </Typography>
-                  {renderDirectoryGrid(availableDirs)}
+                  {renderDirectoryOrImageGrid(availableDirs)}
                 </>
               )}
               
-              {currentDir && (
+              {/* {currentDir && (
                 <>
                   {subdirectories.length > 0 ? (
                     renderDirectoryGrid(subdirectories)
@@ -821,7 +912,23 @@ const [notification, setNotification] = useState('');
                     </Box>
                   )}
                 </>
-              )}
+              )} */}
+              {currentDir && (
+  <>
+    {subdirectories.length > 0 ? (
+      renderDirectoryOrImageGrid(subdirectories)
+    ) : imagePreviewsInDir.length > 0 ? (
+      renderDirectoryOrImageGrid([], imagePreviewsInDir)
+    ) : (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+        <Alert severity="info" sx={{ width: '100%' }}>
+          No subdirectories or images found in this location
+        </Alert>
+      </Box>
+    )}
+  </>
+)}
+
             </>
           )}
         </DialogContent>
