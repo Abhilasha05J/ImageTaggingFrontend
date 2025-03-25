@@ -172,7 +172,7 @@ const [notification, setNotification] = useState('');
       setSubdirectories([]);
       setCurrentDir('');
       setDirHistory([]);
-      setBreadcrumbs([{ name: 'Root', path: '' }]);
+      setBreadcrumbs([{ name: 'Home', path: '' }]);
     }
   };
 
