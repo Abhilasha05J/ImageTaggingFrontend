@@ -102,7 +102,14 @@ const [notification, setNotification] = useState('');
       setBreadcrumbs([{ name: 'Home', path: '' }]);
     }
   }, [currentDir]);
-
+  
+  //Image preview
+  useEffect(() => {
+    if (currentDir && subdirectories.length === 0) {
+      fetchImages(currentDir); // Load images for preview
+    }
+  }, [currentDir, subdirectories]);
+  
   const fetchInitialDirectories = async () => {
     setDirLoading(true);
     try {
@@ -809,7 +816,7 @@ const [notification, setNotification] = useState('');
                 </>
               )}
               
-              {currentDir && (
+              {/* {currentDir && (
                 <>
                   {subdirectories.length > 0 ? (
                     renderDirectoryGrid(subdirectories)
@@ -821,7 +828,42 @@ const [notification, setNotification] = useState('');
                     </Box>
                   )}
                 </>
-              )}
+              )} */}
+              {currentDir && (
+  <>
+    {subdirectories.length > 0 ? (
+      renderDirectoryGrid(subdirectories)
+    ) : (
+      <>
+        <Typography variant="subtitle1" gutterBottom sx={{ pl: 1 }}>
+          Images in this folder
+        </Typography>
+        <Box sx={{ maxHeight: '50vh', overflowY: 'auto' }}>
+          <Grid container spacing={2}>
+            {images.length > 0 ? images.map((img) => (
+              <Grid item xs={6} sm={4} md={3} key={img.key}>
+                <Card>
+                  <CardActionArea onClick={() => setDirDialogOpen(false) || fetchImages(currentDir)}>
+                    <img
+                      src={`${API_BASE_URL}/api/image/${encodeURIComponent(img.key)}`}
+                      alt={img.filename}
+                      style={{ width: '100%', height: '150px', objectFit: 'cover' }}
+                    />
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            )) : (
+              <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
+                No images found in this folder.
+              </Typography>
+            )}
+          </Grid>
+        </Box>
+      </>
+    )}
+  </>
+)}
+
             </>
           )}
         </DialogContent>
